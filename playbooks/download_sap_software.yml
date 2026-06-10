@@ -1,0 +1,29 @@
+---
+- name: Download SAP Software from Launchpad
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Override these via AAP extra vars or Survey
+    sap_software_download_directory: /sapmedia/downloads
+    sap_software_files:
+      - SAPCAR_1115-70006178.EXE        # Example: SAPCAR tool
+      # Add more SAP file names here
+
+  tasks:
+    - name: Ensure download directory exists
+      ansible.builtin.file:
+        path: "{{ sap_software_download_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download SAP software files
+      community.sap_launchpad.software_center_download:
+        suser_id: "{{ sap_user }}"
+        suser_password: "{{ sap_password }}"
+        softwarecenter_search_query: "{{ item }}"
+        dest: "{{ sap_software_download_directory }}"
+      loop: "{{ sap_software_files }}"
+      loop_control:
+        label: "{{ item }}"
